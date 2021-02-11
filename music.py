@@ -3,6 +3,8 @@ import requests
 import screct
 import json
 import re
+import zipfile 
+import sqlite3
 
 def scan_music(path):
     music_list=[]
@@ -25,16 +27,31 @@ def scan_music(path):
             a=scan_music(file_own.path)
             for item in a:
                 music_list.append(item)
-
+        
     os.chdir(past_path)
     return music_list
         
     
-def push_database(item):
+def push_database(item,dbfile,table="main"):
     a=1
     #TODO:将音乐文件提交至数据库管理
-
-
+    #item 字典
+    #cre=sqlite3.connect(dbfile)
+    #q=cre.cursor()
+    cstr="insert into "+table+"("
+    num=0
+    values=[]
+    for key in item.keys():
+        num=num+1   
+        cstr=cstr+key+","
+        values.append(item[key])
+    cstr=cstr[0:-1]+") Values("
+    for i in range(1,num+1):
+        cstr=cstr+"?,"
+    cstr=cstr[0:-1]+");"
+    print(cstr)
+    #q.execute(cstr,values)
+    #cre.commit()
 
 def hifini_sign_auto():
     cookies=screct.hifini_cookies
@@ -48,7 +65,14 @@ def hifini_sign_auto():
     else:
         print("Hifini签到失败")
 
-for item in scan_music("C:\YH"):
-    print(item["path"])
+#for item in scan_music("C:\YH"):
+    #print(item["path"])
 
+#hifini_sign_auto()
+
+item={
+    'name':'China-X',
+    'author':'徐梦圆'
+}
+push_database(item,"1.db")
 
