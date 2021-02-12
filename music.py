@@ -23,6 +23,18 @@ def scan_music(path):
             if re.match(mp3,file_own.name) or re.match(flac,file_own.name):
                 item={'name':file_own.name,'path':file_own.path}
                 music_list.append(item)
+            if re.match(zip_cp,file_own.name):
+                try:
+                    zip_fl=zipfile.ZipFile(file_own.path)
+                except Exception:
+                    print(file_own.name+"is a damaged zip file")
+                for name in zip_fl.namelist():
+                    if re.match(mp3,name) or re.match(flac,name):
+                        path=file_own.path+"\\"+name
+                        path=path.replace("/","\\")
+                        name=path[path.rfind('\\')+1:len(path)]
+                        item={'name':name,'path':path}
+                        music_list.append(item)
         if file_own.is_dir():
             a=scan_music(file_own.path)
             for item in a:
@@ -36,8 +48,8 @@ def push_database(item,dbfile,table="main"):
     a=1
     #TODO:将音乐文件提交至数据库管理
     #item 字典
-    #cre=sqlite3.connect(dbfile)
-    #q=cre.cursor()
+    cre=sqlite3.connect(dbfile)
+    q=cre.cursor()
     cstr="insert into "+table+"("
     num=0
     values=[]
@@ -49,14 +61,13 @@ def push_database(item,dbfile,table="main"):
     for i in range(1,num+1):
         cstr=cstr+"?,"
     cstr=cstr[0:-1]+");"
-    print(cstr)
-    #q.execute(cstr,values)
-    #cre.commit()
+    q.execute(cstr,values)
+    cre.commit()
 
 def hifini_sign_auto():
     cookies=screct.hifini_cookies
     url = 'https://www.hifini.com/sg_sign.htm'
-    r = requests.post(url, cookies=cookies, headers={"Content-type": "text/html; charset=utf-8"})
+    r = requests.post(url, cookies=cookies, headers={"Content-type": "text/html; charset=utf-8","User-Agent":'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36'})
     if "成功" in r.text:
         print("Hifini成功签到")
         return 
@@ -65,14 +76,8 @@ def hifini_sign_auto():
     else:
         print("Hifini签到失败")
 
-#for item in scan_music("C:\YH"):
-    #print(item["path"])
 
 #hifini_sign_auto()
 
-item={
-    'name':'China-X',
-    'author':'徐梦圆'
-}
-push_database(item,"1.db")
+#push_database(item,"1.db")
 
